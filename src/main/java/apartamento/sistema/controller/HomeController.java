@@ -36,20 +36,42 @@ public class HomeController {
         return "contato";
     }
 
-    @GetMapping("/apartamentos")
-    public String apartamento (Model model) {
+
+@GetMapping("/apartamento")
+    public String apartamento(Model model) {
         List<Apartamento> listaDeApartamentos = db.query(
                 "select cod_apto,num_porta,num_quartos,tipo,cod_prop from apartamento",
                 (res, rowNum) -> {
-                    Proprietario tipo = new Apartamento(
+                    Apartamento a = new Apartamento(
                             res.getInt("cod_apto"),
                             res.getInt("num_porta"),
                             res.getInt("num_quartos"),
-                            res.getString("tipo"),
-                            res.getInt("cod_prop"));
-                    return tipo;
+                            res.getString("tipo"));
+                    return a;
                 });
         model.addAttribute("contatos", listaDeApartamentos);
-        return "tipo";
+        return "apartamento";
     }
-}
+
+    @GetMapping("novo")
+    public String exibeForm(Model model) {
+        model.addAttribute("prop", new Proprietario());
+        return "formulario";
+    }
+
+    @PostMapping("novo")
+    public String cadastroProprietario(Proprietario proprietario) {
+        System.out.println(proprietario.getNome());
+        db.update(
+                "update into proprietario (nome, telefone) values (?,?);",
+                proprietario.getNome(),
+                proprietario.getTelefone());
+        return "home";
+    }
+
+    @GetMapping("excluir-contato")
+    public String apagarContato(@RequestParam(value = "id", required = true) Integer cod) {
+        System.out.println("--------------------> " + cod);
+        db.update("delete from contatos where id = ?", cod);
+        return "redirect:/contatos";
+    }
